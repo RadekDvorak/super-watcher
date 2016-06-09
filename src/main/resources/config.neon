@@ -1,0 +1,67 @@
+extensions:
+    console: Kdyby\Console\DI\ConsoleExtension
+    events: Kdyby\Events\DI\EventsExtension
+
+parameters:
+    jira:
+        query: "issuetype = \"Superman's task\" AND status in (Backlog, Ready, \"Waiting for information\") AND assignee in (EMPTY)"
+        asapQuery: "%jira.query% AND Urgency = ASAP"
+
+services:
+    env:
+        class: RadekDvorak\SuperWatcher\Env
+
+    jira:
+        class: \Jira_Api
+        arguments:
+            - @env::get(JIRA_HOST)
+
+    jiraAuth:
+        class: \Jira_Api_Authentication_Basic
+        factory: @jiraAuthFactory::createAuthentication
+
+    jiraAuthFactory:
+        class: RadekDvorak\SuperWatcher\Jira\JiraAuthFactory
+        arguments:
+            - @env::get(JIRA_USER)
+            - @env::get(JIRA_PASS)
+
+    jiraIssueWalker:
+        class: RadekDvorak\SuperWatcher\Jira\IssueWalker
+        arguments:
+            query: %jira.asapQuery%
+
+    mailer:
+        class: Swift_Mailer
+
+    mailFactory:
+        class: RadekDvorak\SuperWatcher\Notifier\Mail\MailFactory
+        arguments:
+            - @env::get(MAIL_FROM_NAME)
+            - @env::get(MAIL_FROM_ADDRESS)
+            - @env::get(MAIL_TO_NAME)
+            - @env::get(MAIL_TO_ADDRESS)
+
+    mailListener:
+        class: RadekDvorak\SuperWatcher\Notifier\Mail\NotificationListener(@mailSender)
+        tags: [kdyby.subscriber]
+
+    mailSender:
+        class: RadekDvorak\SuperWatcher\Notifier\Mail\Sender
+
+    mailTransport:
+        class: Swift_SmtpTransport
+        arguments:
+            - @env::get(SMTP_HOST)
+            - @env::get(SMTP_PORT)
+
+    - Symfony\Component\Console\Input\ArgvInput
+    - Symfony\Component\Console\Output\ConsoleOutput
+    - RadekDvorak\SuperWatcher\Command\IssueFactory
+    - RadekDvorak\SuperWatcher\Command\ReporterFactory
+
+console:
+    commands:
+        - RadekDvorak\SuperWatcher\Command\NotifySupermanCommand
+php:
+    date.timezone: Europe/Prague

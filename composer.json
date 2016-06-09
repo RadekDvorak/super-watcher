@@ -1,0 +1,27 @@
+{
+	"name": "radekdvorak/super-watcher",
+	"description": "Superman service JIRA watcher and notifier",
+	"minimum-stability": "stable",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Radek Dvořák",
+			"email": "radek.dvorak@gmail.com"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"RadekDvorak\\SuperWatcher\\": "src/main/php"
+		}
+	},
+	"require": {
+		"chobie/jira-api-restclient": "^1.0",
+		"tracy/tracy": "^2.3",
+		"vlucas/phpdotenv": "^2.2",
+		"kdyby/console": "^2.6",
+		"nette/bootstrap": "^2.3",
+		"kdyby/events": "^3.0",
+		"nette/reflection": "^2.3",
+		"swiftmailer/swiftmailer": "^5.4"
+	}
+}
